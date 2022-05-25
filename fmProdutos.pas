@@ -8,26 +8,28 @@ uses
   Vcl.DBGrids, Datasnap.DBClient, FireDAC.Stan.Intf, FireDAC.Stan.Option,
   FireDAC.Stan.Param, FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf,
   FireDAC.DApt.Intf, FireDAC.Stan.Async, FireDAC.DApt, FireDAC.Comp.DataSet,
-  FireDAC.Comp.Client;
+  FireDAC.Comp.Client, Vcl.ExtCtrls, Vcl.Buttons;
 
 type
   TTFmProdutos = class(TForm)
-    edtCodigo: TEdit;
-    edtDescricao: TEdit;
-    Código: TLabel;
-    Descrição: TLabel;
-    Unidade: TLabel;
     DBGrid1: TDBGrid;
     cdProdutos: TClientDataSet;
     dsProdutos: TDataSource;
     cdProdutosCODIGO: TIntegerField;
     cdProdutosDESCRICAO: TStringField;
     cdProdutosUNIDADE: TStringField;
-    btInserir: TButton;
-    btRemover: TButton;
-    btGravar: TButton;
-    cbUnidade: TComboBox;
     qryProduto: TFDQuery;
+    Panel1: TPanel;
+    Código: TLabel;
+    Descrição: TLabel;
+    Unidade: TLabel;
+    edtCodigo: TEdit;
+    edtDescricao: TEdit;
+    cbUnidade: TComboBox;
+    Panel2: TPanel;
+    btGravar: TBitBtn;
+    btRemover: TBitBtn;
+    btInserir: TBitBtn;
     procedure btInserirClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btRemoverClick(Sender: TObject);
@@ -79,12 +81,30 @@ begin
 end;
 
 procedure TTFmProdutos.btInserirClick(Sender: TObject);
+var
+  bExiste: boolean;
 begin
-  cdProdutos.Insert;
-  cdProdutosCODIGO.AsInteger   := StrToInt(edtCodigo.Text);
-  cdProdutosDESCRICAO.AsString := edtDescricao.Text;
-  cdProdutosUNIDADE.AsString   := cbUnidade.Text;
-  cdProdutos.Post;
+  bExiste := False;
+   cdProdutos.First;
+  while not cdProdutos.Eof do
+  begin
+    if cdProdutosCODIGO.AsInteger = StrToInt(edtCodigo.Text) then
+    begin
+      ShowMessage('Código já existe.');
+      bExiste := True;
+      break;
+    end;
+    cdProdutos.Next;
+  end;
+
+  if not bExiste then
+  begin
+    cdProdutos.Insert;
+    cdProdutosCODIGO.AsInteger   := StrToInt(edtCodigo.Text);
+    cdProdutosDESCRICAO.AsString := edtDescricao.Text;
+    cdProdutosUNIDADE.AsString   := cbUnidade.Text;
+    cdProdutos.Post;
+  end;
 end;
 
 procedure TTFmProdutos.btRemoverClick(Sender: TObject);
@@ -103,7 +123,8 @@ begin
   qryProduto.SQL.Clear;
   qryProduto.SQL.Add('SELECT * FROM PRODUTOS');
   qryProduto.Open;
-
+  cdProdutos.Close;
+  cdProdutos.CreateDataSet;
   while not qryProduto.Eof do
   begin
     cdProdutos.Insert;

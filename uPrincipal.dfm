@@ -25,6 +25,7 @@ object Form1: TForm1
       end
       object Pedidos1: TMenuItem
         Caption = 'Pedidos'
+        OnClick = Pedidos1Click
       end
     end
   end
